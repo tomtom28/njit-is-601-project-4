@@ -1,4 +1,4 @@
-from flask import Flask, Markup, render_template, make_response
+from flask import Flask, Markup, render_template, make_response, request
 from logic import square_of_number_plus_nine
 
 
@@ -31,8 +31,16 @@ def hello_template():
     return render_template("index.html")
 
 
-@app.route("/")
+@app.route("/response")
 def response():
+    headers = {"Content-Type": "application/json"}
+    return make_response('it worked!', 200, headers)
+
+
+@app.route("/", methods=['GET'])
+def hello():
+    if request.method != 'GET':
+        return make_response('Malformed request', 400)
     headers = {"Content-Type": "application/json"}
     return make_response('it worked!', 200, headers)
 
