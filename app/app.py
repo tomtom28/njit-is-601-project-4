@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, Markup
 from logic import square_of_number_plus_nine
 
 
@@ -15,10 +15,15 @@ app = Flask(
 )
 
 
-@app.route("/")
-def hello():
+@app.route("/logic")
+def logic():
     value = square_of_number_plus_nine(5)
     return str(value)
+
+
+@app.route("/")
+def hello():
+    return Markup("<h1>Hello World!</h1>")
 
 
 if __name__ == '__main__':
