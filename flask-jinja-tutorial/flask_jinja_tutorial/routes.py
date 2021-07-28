@@ -13,7 +13,8 @@ def home():
     return render_template(
         'home.html',
         title="Jinja Demo Site",
-        description="Smarter page templates with Flask & Jinja."
+        description="Smarter page templates with Flask & Jinja.",
+        status=False
     )
 
 
