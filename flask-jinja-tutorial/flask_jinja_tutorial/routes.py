@@ -10,12 +10,11 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     """Landing page."""
-    return "hello"
-    # return render_template(
-    #     'home.html',
-    #     title="Jinja Demo Site",
-    #     description="Smarter page templates with Flask & Jinja."
-    # )
+    return render_template(
+        'home.html',
+        title="Jinja Demo Site",
+        description="Smarter page templates with Flask & Jinja."
+    )
 
 
 if __name__ == '__main__':
