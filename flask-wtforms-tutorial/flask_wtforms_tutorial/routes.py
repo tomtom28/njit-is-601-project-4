@@ -4,7 +4,7 @@ from flask import (
     render_template,
     redirect
 )
-from forms import ContactForm
+from forms import ContactForm, SignupForm
 
 
 app = Flask(__name__, instance_relative_config=False)
@@ -21,6 +21,20 @@ def contact():
         "contact.jinja2",
         form=form,
         template="form-template"
+    )
+
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    """User sign-up form for account creation."""
+    form = SignupForm()
+    if form.validate_on_submit():
+        return redirect(url_for("success"))
+    return render_template(
+        "signup.jinja2",
+        form=form,
+        template="form-template",
+        title="Signup Form"
     )
 
 
