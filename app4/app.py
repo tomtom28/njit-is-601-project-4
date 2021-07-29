@@ -30,7 +30,11 @@ def article(year, month, title):
 @app.route("/")
 def index():
     """Serve homepage template."""
-    return render_template("index.html")
+    return render_template(
+        "index.html",
+        title='Flask Tutorial: Part 4',
+        body='This is from a template in Part 4 of the Flask Tutorial'
+    )
 
 
 if __name__ == '__main__':
