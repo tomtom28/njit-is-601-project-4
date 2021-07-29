@@ -20,7 +20,8 @@ def contact():
     return render_template(
         "contact.jinja2",
         form=form,
-        template="form-template"
+        template="form-template",
+        title="Contact Form"
     )
 
 
@@ -45,6 +46,15 @@ def home():
         "index.jinja2",
         template="home-template",
         title="Flask-WTF tutorial"
+    )
+
+
+@app.route("/success", methods=["GET", "POST"])
+def success():
+    """Generic success page upon form submission."""
+    return render_template(
+        "success.jinja2",
+        template="success-template"
     )
 
 
