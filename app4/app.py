@@ -1,4 +1,4 @@
-from flask import Flask, render_template, make_response
+from flask import Flask, render_template, make_response, redirect
 
 
 app = Flask(__name__, template_folder="templates")
@@ -42,6 +42,10 @@ def api_users():
     response = make_response('Test worked!', 200)
     response.headers['Content-Type'] = 'application/json'
     return response
+
+
+# TODO - Redirecting Users Between Views
+# https://hackersandslackers.com/flask-routes
 
 
 if __name__ == '__main__':
