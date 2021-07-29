@@ -1,8 +1,10 @@
-from flask import Flask
-app = Flask(__name__)
+from flask import Flask, render_template
 
 
-@app.route("/")
+app = Flask(__name__, template_folder="templates")
+
+
+@app.route("/home")
 def home():
     return "Hello World!"
 
@@ -23,6 +25,12 @@ def profile(username):
 def article(year, month, title):
     # ... Logic goes here
     return "Article Title: " + str(title) + "<br/> Month: " + str(month) + "<br/> Year: " + str(year)
+
+
+@app.route("/")
+def index():
+    """Serve homepage template."""
+    return render_template("index.html")
 
 
 if __name__ == '__main__':
