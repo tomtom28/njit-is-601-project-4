@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, make_response
 
 
 app = Flask(__name__, template_folder="templates")
@@ -35,6 +35,13 @@ def index():
         title='Flask Tutorial: Part 4',
         body='This is from a template in Part 4 of the Flask Tutorial'
     )
+
+
+@app.route("/api/v2/test_response")
+def api_users():
+    response = make_response('Test worked!', 200)
+    response.headers['Content-Type'] = 'application/json'
+    return response
 
 
 if __name__ == '__main__':
