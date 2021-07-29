@@ -39,8 +39,13 @@ def signup():
 
 
 @app.route("/")
-def hello():
-    return "hello there"
+def home():
+    """Landing page."""
+    return render_template(
+        "index.jinja2",
+        template="home-template",
+        title="Flask-WTF tutorial"
+    )
 
 
 if __name__ == '__main__':
