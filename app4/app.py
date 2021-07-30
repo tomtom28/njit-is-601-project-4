@@ -48,10 +48,15 @@ def api_users():
     return response
 
 
-@app.route("/login")
-def login():
+@app.route("/signin")
+def dashboard():
     # This had to serve a static page b/c of how tutorial made the route
     return redirect('/dashboard.html')
+
+
+@app.route("/login")
+def login():
+    return redirect(url_for('dashboard'))
 
 
 if __name__ == '__main__':
