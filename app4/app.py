@@ -1,7 +1,11 @@
-from flask import Flask, render_template, make_response, redirect
+from flask import Flask, render_template, make_response, redirect, url_for
 
-
-app = Flask(__name__, template_folder="templates")
+app = Flask(
+    __name__,
+    template_folder="templates",
+    static_folder="static",
+    static_url_path=''
+)
 
 
 @app.route("/home")
@@ -44,8 +48,10 @@ def api_users():
     return response
 
 
-# TODO - Redirecting Users Between Views
-# https://hackersandslackers.com/flask-routes
+@app.route("/login")
+def login():
+    # This had to serve a static page b/c of how tutorial made the route
+    return redirect('/dashboard.html')
 
 
 if __name__ == '__main__':
