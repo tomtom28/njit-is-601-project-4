@@ -1,5 +1,6 @@
 from flask import Flask, render_template, make_response, redirect, url_for, request
 from forms import SignupForm
+from flask import g
 
 
 app = Flask(
@@ -99,6 +100,27 @@ def signup_page():
         template='signup-page',
         body="Sign up for a user account."
     )
+
+
+@app.route("/g")
+def get_test_value():
+    if 'test_value' not in g:
+        g.test_value = 'This the g-value'
+    return g.test_value
+
+
+@app.route("/rm/g")
+def rm_test_value():
+    if 'test_value' in g:
+        redirect(url_for('remove_test_value'))
+    else:
+        return "There is NO g-value"
+
+
+# @app.teardown_testvalue
+def remove_test_value():
+    test_value = g.pop('test_value', None)
+    return test_value + " being removed"
 
 
 if __name__ == '__main__':
