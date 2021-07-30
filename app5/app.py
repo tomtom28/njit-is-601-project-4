@@ -4,6 +4,11 @@ from flask import Flask
 app = Flask(__name__)
 
 
+# TODO
+# https://hackersandslackers.com/configure-flask-applications
+# What Not To Do: Inline Configuration
+
+
 @app.route("/")
 def home():
     return "Basic Setup Done!"
