@@ -123,5 +123,31 @@ def remove_test_value():
     return test_value + " being removed"
 
 
+@app.errorhandler(404)
+def not_found(arg):
+    """Page not found."""
+    # return make_response(
+    return render_template('/404.html', message='Page Not Found')  # ,
+        # 404
+     # )
+
+
+@app.errorhandler(400)
+def bad_request():
+    """Bad request."""
+    return make_response(
+        render_template("400.html", message='Page Not Found'),
+        400
+    )
+
+@app.errorhandler(500)
+def server_error(arg):
+    """Internal server error."""
+    # return make_response(
+    return render_template("/500.html", message='Server Error')  # ,
+        # 500
+    # )
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5003, debug=True)
