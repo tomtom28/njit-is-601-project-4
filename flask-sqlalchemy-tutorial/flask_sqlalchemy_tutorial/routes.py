@@ -1,17 +1,15 @@
 """Initialize Flask app."""
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from ddtrace import patch_all
+
 
 app = Flask(__name__, instance_relative_config=False)
 app.config.from_object("config.Config")
 
+
 db = SQLAlchemy()
-# db.init_app(app)
-# db.create_all()  # Create database tables for our data models
-
-
-patch_all()
+db.init_app(app)
+db.create_all()  # Create database tables for our data models
 
 
 @app.route("/", methods=["GET"])
