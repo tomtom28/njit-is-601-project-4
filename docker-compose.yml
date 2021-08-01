@@ -35,3 +35,8 @@ services:
     container_name: "Flask_App_9"
     ports:
       - "5008:5008"
+  final:
+    build: ./my-final-project
+    container_name: "My_Final_Project"
+    ports:
+      - "5011:5011"
