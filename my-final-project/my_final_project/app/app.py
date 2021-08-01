@@ -1,10 +1,10 @@
 from typing import List, Dict
 import simplejson as json
-from flask import Flask, request, Response, redirect
-from flask import render_template
+from flask import Flask, request, Response, redirect, render_template, url_for
 from flaskext.mysql import MySQL
 from pymysql.cursors import DictCursor
 
+from forms import SignupForm
 
 app = Flask(__name__)
 app.config.from_object('config.Config')
@@ -148,6 +148,21 @@ def form_delete_post(player_id):
     cursor.execute(sql_delete_query, player_id)
     mysql.get_db().commit()
     return redirect("/", code=302)
+
+
+# Added Sign Up Page
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    """User sign-up form for account creation."""
+    form = SignupForm()
+    if form.validate_on_submit():
+        return redirect(url_for("index"))
+    return render_template(
+        "signup.html",
+        form=form,
+        template="form-template",
+        title="Signup Form"
+    )
 
 
 if __name__ == '__main__':

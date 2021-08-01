@@ -1,3 +1,4 @@
+# Original MLB Players Data
 CREATE DATABASE mlbPlayersData;
 use mlbPlayersData;
 
@@ -112,3 +113,15 @@ INSERT INTO tblMlbPlayersImport (fld_Name, fld_Team, fld_Position, fld_Height_in
     ('Justin Speier','ANA','Relief Pitcher', 76, 205, 33.31),
     ('Darren Oliver','ANA','Relief Pitcher', 74, 220, 36.4),
     ('Hector Carrasco','ANA','Relief Pitcher', 74, 220, 37.36);
+
+
+# User Login Table
+CREATE TABLE IF NOT EXISTS `flasklogin-users` (
+    `id` INT AUTO_INCREMENT,
+    `name` VARCHAR(50) CHARACTER SET utf8 NOT NULL,
+    `email` VARCHAR(50) CHARACTER SET utf8 NOT NULL,
+    `password` VARCHAR(200) CHARACTER SET utf8 NOT NULL,
+    `created_on` DATETIME,
+    `last_login` DATETIME,
+    PRIMARY KEY (`id`)
+);
