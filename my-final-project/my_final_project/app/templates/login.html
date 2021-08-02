@@ -9,23 +9,11 @@
 {% block content %}
 
     <div class="form-wrapper">
-      <h2 class="title">Sign Up</h2>
+      <h2 class="title">Login</h2>
 
-      <form method="POST" action="{{ url_for('signup') }}">
+      <form method="POST" action="{{ url_for('login') }}">
 
           {{ form.csrf_token }}
-
-          <fieldset class="form-field">{{ form.name.label }} {{ form.name }}
-            {% if form.name.errors %}
-              <ul class="errors">
-                {% for error in form.name.errors %}
-                  <li class="error">
-                      <i class="fas fa-exclamation"></i> <span class="error-message">{{ error }}</span>
-                  </li>
-                {% endfor %}
-              </ul>
-            {% endif %}
-          </fieldset>
 
           <fieldset class="form-field">{{ form.email.label }} {{ form.email }}
             {% if form.email.errors %}
@@ -51,18 +39,6 @@
             {% endif %}
           </fieldset>
 
-          <fieldset class="form-field">{{ form.confirmPassword.label }} {{ form.confirmPassword }}
-            {% if form.confirmPassword.errors %}
-              <ul class="errors">
-                {% for error in form.confirmPassword.errors %}
-                  <li class="error">
-                      <i class="fas fa-exclamation"></i> <span class="error-message">{{ error }}</span>
-                  </li>
-                {% endfor %}
-              </ul>
-            {% endif %}
-          </fieldset>
-
           {{ form.submit }}
 
 
@@ -75,7 +51,7 @@
           </div>
       {% endfor %}
 
-        <p>If you are a returning user, please <a href="/login">login</a> to your account.</p>
+        <p>If you are a new user, please <a href="/signup">signup</a> for an account.</p>
 
     </div>
 

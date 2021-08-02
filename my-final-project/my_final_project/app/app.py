@@ -8,7 +8,7 @@ from flask_login import LoginManager, login_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import User
 
-from forms import SignupForm
+from forms import SignupForm, LoginForm
 
 
 app = Flask(__name__)
@@ -48,7 +48,7 @@ def load_user(user_id):
 def unauthorized():
     """Redirect unauthorized users to Login page."""
     flash('You must be logged in to view that page.')
-    return redirect(url_for('signup'))
+    return redirect(url_for('login'))
 
 
 # User authentication is below...
@@ -58,10 +58,12 @@ def signup():
     """User sign-up form for account creation."""
     form = SignupForm()
     if form.validate_on_submit():
+
         # Get Form Fields
         name = form.name.data
         email = form.email.data
         password = form.password.data
+
         # Get User by Email
         cursor = mysql.get_db().cursor()
         cursor.execute('SELECT * FROM `flasklogin-users` WHERE email = %s', email)
@@ -72,18 +74,21 @@ def signup():
                 password,
                 method='sha256'
             )
+
             # Add User to DB
             insert_cursor = mysql.get_db().cursor()
             input_data = (name, email, hashed_password)
             sql_insert_query = """INSERT INTO `flasklogin-users` (name, email, password) VALUES (%s, %s, %s) """
             insert_cursor.execute(sql_insert_query, input_data)
             mysql.get_db().commit()
+
             # Add User to session
-            user = User(1, name, email, hashed_password)
-            # db.session.add(user)
-            # db.session.commit()  # Create new user
+            cursor = mysql.get_db().cursor()
+            cursor.execute('SELECT * FROM `flasklogin-users` WHERE email = %s', email)
+            result = cursor.fetchall()
+            user_id = result[0]['id']
+            user = User(user_id, name, email, hashed_password)
             login_user(user)  # Log in as newly created user
-            # return redirect(url_for('main_bp.index'))
             return redirect('/')
         flash('A user already exists with that email address.')
     return render_template(
@@ -92,6 +97,42 @@ def signup():
         form=form,
         template='signup-page',
         body="Sign up for a user account."
+    )
+
+
+# Login Page
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """User login form for account creation."""
+    form = LoginForm()
+
+    if form.validate_on_submit():
+
+        # Get Form Fields
+        email = form.email.data
+        password = form.password.data
+
+        # Hash the password
+        hashed_password = generate_password_hash(password, method='sha256')
+
+        # Get User by Email and Hashed Password
+        cursor = mysql.get_db().cursor()
+        cursor.execute('SELECT * FROM `flasklogin-users` WHERE email = %s AND password = %s', (email, hashed_password))
+        result = cursor.fetchall()
+        if len(result) != 0:  # User found
+            # Add User to session
+            user_id = result[0]['id']
+            name = result[0]['name']
+            user = User(user_id, name, email, hashed_password)
+            login_user(user)  # Log in as newly created user
+            return redirect('/')
+        flash('User Not Found! Please re-check email and/or password.')
+    return render_template(
+        'login.html',
+        title='Login to Account.',
+        form=form,
+        template='login-page',
+        body="Login to your account."
     )
 
 
