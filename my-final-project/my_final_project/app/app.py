@@ -1,16 +1,100 @@
 from typing import List, Dict
 import simplejson as json
-from flask import Flask, request, Response, redirect, render_template, url_for
+from flask import Flask, request, Response, redirect, render_template, url_for, Blueprint, flash
 from flaskext.mysql import MySQL
 from pymysql.cursors import DictCursor
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_user, login_required
+from werkzeug.security import generate_password_hash, check_password_hash
+from models import User
 
 from forms import SignupForm
+
 
 app = Flask(__name__)
 app.config.from_object('config.Config')
 
+
+db = SQLAlchemy(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+db.init_app(app)
+
+
+# Blueprint Configuration
+main_bp = Blueprint(
+    'main_bp', __name__,
+    template_folder='templates',
+    static_folder='static'
+)
+app.register_blueprint(main_bp)
+
+
 mysql = MySQL(cursorclass=DictCursor)
 mysql.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    """Check if user is logged-in upon page load."""
+    if user_id is not None:
+        # Get User by Email
+        cursor = mysql.get_db().cursor()
+        cursor.execute('SELECT * FROM `flasklogin-users` WHERE id = %s', user_id)
+        result = cursor.fetchall()
+        return result[0]['id']
+    return None
+
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    """Redirect unauthorized users to Login page."""
+    flash('You must be logged in to view that page.')
+    return redirect(url_for('main_bp.signup'))
+
+
+# User authentication is below...
+# Sign Up Page
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    """User sign-up form for account creation."""
+    form = SignupForm()
+    if form.validate_on_submit():
+        # Get Form Fields
+        name = form.name.data
+        email = form.email.data
+        password = form.password.data
+        # Get User by Email
+        cursor = mysql.get_db().cursor()
+        cursor.execute('SELECT * FROM `flasklogin-users` WHERE email = %s', email)
+        result = cursor.fetchall()
+        if len(result) == 0:  # User does not exist yet
+            # Encrypt Password
+            hashed_password = generate_password_hash(
+                password,
+                method='sha256'
+            )
+            # Add User to DB
+            insert_cursor = mysql.get_db().cursor()
+            input_data = (name, email, hashed_password)
+            sql_insert_query = """INSERT INTO `flasklogin-users` (name, email, password) VALUES (%s, %s, %s) """
+            insert_cursor.execute(sql_insert_query, input_data)
+            mysql.get_db().commit()
+            # Add User to session
+            user = User(1, name, email, hashed_password)
+            # db.session.add(user)
+            # db.session.commit()  # Create new user
+            login_user(user)  # Log in as newly created user
+            # return redirect(url_for('main_bp.index'))
+            return redirect('/')
+        flash('A user already exists with that email address.')
+    return render_template(
+        'signup.html',
+        title='Create an Account.',
+        form=form,
+        template='signup-page',
+        body="Sign up for a user account."
+    )
 
 
 # API Endpoints are below...
@@ -80,7 +164,7 @@ def api_delete(player_id) -> str:
 
 # Jinga Template Views are below...
 # Home Page - View all Players
-@app.route('/', methods=['GET'])
+@main_bp.route('/', methods=['GET'])  # @login_required
 def index():
     user = {'username': 'MLB Players Project'}
     cursor = mysql.get_db().cursor()
@@ -148,21 +232,6 @@ def form_delete_post(player_id):
     cursor.execute(sql_delete_query, player_id)
     mysql.get_db().commit()
     return redirect("/", code=302)
-
-
-# Added Sign Up Page
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
-    """User sign-up form for account creation."""
-    form = SignupForm()
-    if form.validate_on_submit():
-        return redirect(url_for("index"))
-    return render_template(
-        "signup.html",
-        form=form,
-        template="form-template",
-        title="Signup Form"
-    )
 
 
 if __name__ == '__main__':

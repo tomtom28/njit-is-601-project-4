@@ -2,9 +2,11 @@ Flask
 flask-mysql
 simplejson
 python-dotenv
-pymysql
+mysql-connector-python
+mysqlclient
 flask-login
 flask-sqlalchemy
 flask-wtf
 wtforms
 email-validator
+werkzeug

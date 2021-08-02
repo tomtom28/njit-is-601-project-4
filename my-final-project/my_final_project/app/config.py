@@ -13,6 +13,8 @@ class Config:
     SECRET_KEY = "IHUGVFIYUJYIGUibt6gh"
     FLASK_APP = "development"
     FLASK_ENV = "app.py"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_DATABASE_URI = environ.get('SQLALCHEMY_DATABASE_URI')
 
     # Database Config
     MYSQL_DATABASE_HOST = environ.get('MYSQL_DATABASE_HOST')
