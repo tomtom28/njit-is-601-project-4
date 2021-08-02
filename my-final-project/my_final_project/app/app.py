@@ -21,15 +21,6 @@ login_manager.init_app(app)
 db.init_app(app)
 
 
-# Blueprint Configuration
-main_bp = Blueprint(
-    'main_bp', __name__,
-    template_folder='templates',
-    static_folder='static'
-)
-app.register_blueprint(main_bp)
-
-
 mysql = MySQL(cursorclass=DictCursor)
 mysql.init_app(app)
 
@@ -42,7 +33,14 @@ def load_user(user_id):
         cursor = mysql.get_db().cursor()
         cursor.execute('SELECT * FROM `flasklogin-users` WHERE id = %s', user_id)
         result = cursor.fetchall()
-        return result[0]['id']
+        if len(result) != 0:
+            my_id = result[0]['id']
+            name = result[0]['name']
+            email = result[0]['email']
+            password = result[0]['password']
+            return User(my_id, name, email, password)
+        else:
+            return None
     return None
 
 
@@ -50,7 +48,7 @@ def load_user(user_id):
 def unauthorized():
     """Redirect unauthorized users to Login page."""
     flash('You must be logged in to view that page.')
-    return redirect(url_for('main_bp.signup'))
+    return redirect(url_for('signup'))
 
 
 # User authentication is below...
@@ -164,7 +162,7 @@ def api_delete(player_id) -> str:
 
 # Jinga Template Views are below...
 # Home Page - View all Players
-@main_bp.route('/', methods=['GET'])  # @login_required
+@app.route('/', methods=['GET'])
 def index():
     user = {'username': 'MLB Players Project'}
     cursor = mysql.get_db().cursor()
@@ -184,12 +182,14 @@ def record_view(player_id):
 
 # Add New Player by Id Page
 @app.route('/players/new', methods=['GET'])
+@login_required
 def form_insert_get():
     return render_template('new.html', title='New Player Form')
 
 
 # Add New Player by Id Form
 @app.route('/players/new', methods=['POST'])
+@login_required
 def form_insert_post():
     cursor = mysql.get_db().cursor()
     input_data = (request.form.get('fldPlayerName'), request.form.get('fldTeamName'),
@@ -203,6 +203,7 @@ def form_insert_post():
 
 # Edit Player by Id Page
 @app.route('/edit/<int:player_id>', methods=['GET'])
+@login_required
 def form_edit_get(player_id):
     cursor = mysql.get_db().cursor()
     cursor.execute('SELECT * FROM tblMlbPlayersImport WHERE id=%s', player_id)
@@ -212,6 +213,7 @@ def form_edit_get(player_id):
 
 # Edit Player by Id Form
 @app.route('/edit/<int:player_id>', methods=['POST'])
+@login_required
 def form_update_post(player_id):
     cursor = mysql.get_db().cursor()
     input_data = (request.form.get('fldPlayerName'), request.form.get('fldTeamName'),
@@ -226,6 +228,7 @@ def form_update_post(player_id):
 
 # Delete Player by Id Form
 @app.route('/delete/<int:player_id>', methods=['POST'])
+@login_required
 def form_delete_post(player_id):
     cursor = mysql.get_db().cursor()
     sql_delete_query = """DELETE FROM tblMlbPlayersImport WHERE id = %s """
