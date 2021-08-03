@@ -31,7 +31,7 @@ The form also ensures that the same `Email` is not repeatedly submitted. Only ne
 
 ### Log In Page
 A user can log into an existing account by navigating to the `/login` route and viewing the `login.html` page.
-![jinja_login](screenshots/jinja_no_auth/jinja-login-page.png)
+![jinja_login](screenshots/jinja_no_auth/jinja-login-page-error.png)
 The login page logic is contained in the `LoginForm` class in `forms.py`.
 
 The form will return a `flash` message if the `Email` and `Password` do not match.
@@ -58,7 +58,7 @@ The new player can then be seen at the bottom of the `index.html` page
 ![jinja_index_new_player](screenshots/jinja_auth/jinja-index-new-player.png)
 
 However, if the `Add+` button is pressed without the user being logged in, then the user will be re-directed to the login page.
-![jinja_new_no_auth](screenshots/jinja_no_auth/jinja-login-page.png)
+![jinja_new_no_auth](screenshots/jinja_no_auth/jinja-login-page-error.png)
 
 
 ### Edit Existing Player Page
@@ -70,7 +70,7 @@ The edited player can then be viewed by their `id` using the `view.html` page
 
 Note that the `edit.html` page can only be seen if the user is logged in. 
 If an unauthorized user clicked `Edit` on the page above, then they would be redirected to the `login` page.
-![jinja_edit_no_auth](screenshots/jinja_no_auth/jinja-login-page.png)
+![jinja_edit_no_auth](screenshots/jinja_no_auth/jinja-login-page-error.png)
 
 
 ### Delete Existing Player
@@ -81,7 +81,7 @@ The player record will then no longer appear on the `index.html` page
 
 Note that a user must be authenticated (i.e., logged in) for the `Delete` button to be able to work.
 If an unauthorized clicked `Delete` on the page above, then they would be redirected to the `login` page.
-![jinja_delete_no_auth](screenshots/jinja_no_auth/jinja-login-page.png)
+![jinja_delete_no_auth](screenshots/jinja_no_auth/jinja-login-page-error.png)
 
 
 
