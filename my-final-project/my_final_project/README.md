@@ -2,17 +2,21 @@
 
 
 ## Project Description
-This project's goal was to use a REST API and use Postman to test the GET, POST, PUT, and DELETE request methods.
+This project's goal was to formalized my knowledge in using Pycharm to set up with Docker, Flask, and MySQL.
 
-Then, user authentication was added using the information found in this [tutorial](https://hackersandslackers.com/flask-login-user-authentication).
+The project includes HTML forms to add new records, update records, and delete records.
 
-The data was taken from [this](https://people.sc.fsu.edu/~jburkardt/data/csv/csv.html) csv source and converted to SQL statements using [this](https://sqlizer.io/#/) online tool.
+It also includes REST API and use Postman to test the GET, POST, PUT, and DELETE request methods.
+
+Finally, user authentication was added to the project using the information found in this [tutorial](https://hackersandslackers.com/flask-login-user-authentication).
+
+The MLB Player data was taken from [this](https://people.sc.fsu.edu/~jburkardt/data/csv/csv.html) csv source and converted to SQL statements using [this](https://sqlizer.io/#/) online tool.
 
 
 
 ## View Jinja Templates
-The project also includes Jinja templates to view the MLB Player data in an HTML format. 
-Aside from the Signup, Login, and Logout features, the functionality is the same as was done in [Project 3](https://github.com/tomtom28/njit-is-601-project-3).
+The project includes Jinja templates to view the MLB Player data in an HTML format. 
+Aside from the Signup form, Login form, and Logout feature, the functionality is the same as was done in [Project 3](https://github.com/tomtom28/njit-is-601-project-3).
 
 ### Sign Up Page
 A user can create an account by navigating to the `/signup` route and viewing the `signup.html` page.
@@ -36,6 +40,14 @@ The login page logic is contained in the `LoginForm` class in `forms.py`.
 
 The form will return a `flash` message if the `Email` and `Password` do not match.
 ![jinja_login_incorrect](screenshots/jinja_no_auth/jinja-login-email-pwd-incorrect.png)
+
+
+### Log Out Button
+A user can log out by clicking the "Logout" button at the top of the navbar.
+If the user clicks the button without being logged in, an error message will be shown (as seen below).
+![jinja_login_no_auth](screenshots/jinja_no_auth/jinja-login-page-error.png)
+
+However, in both situations, the user is always routed back to the `login.html` page.
 
 
 ### Homepage (View All Players)
