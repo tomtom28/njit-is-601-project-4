@@ -8,4 +8,5 @@ This repository contains many independent projects. There is one folder for each
 
 Each project runs independently in its own Docker container and on its own port number, as provided in the `docker-compose.yml` file.
 
-
+Most of the tutorials were completed, however, I ultimately decided to modify Project 3 and add user authentication.
+So, please refer to [my-final-project](/my-final-project) folder and treat that as the final submission.
