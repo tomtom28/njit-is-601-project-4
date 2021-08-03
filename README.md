@@ -27,5 +27,5 @@ After you clone down this repo, you should do the following in PyCharm:
    * Create a Run Time Configuration using `Docker-Compose` and by pointing to the `docker-compose.yml` file. 
      * More information can be found [here](https://www.jetbrains.com/help/pycharm/run-debug-configuration.html)
    * Once the Run Time Configurations are complete, press the green play button. This will automatically seed the database using the `my-final-project/my_final_project/db/init.sql` file.
-     * The database is created in its own Docker container (see the `db` configuration in the `docker-compose.yml` file).
+     * The database is created in its own Docker container (it uses the `db` configuration in the `docker-compose.yml` file).
    * While the project is running PyCharm, you can navigate to `http://localhost:8080/signup` to create a user account and test the application.
