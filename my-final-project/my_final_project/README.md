@@ -44,8 +44,10 @@ The form will return a `flash` message if the `Email` and `Password` do not matc
 
 ### Log Out Button
 A user can log out by clicking the "Logout" button at the top of the navbar.
+![jinja_logout_sucess](screenshots/jinja_no_auth/jinja-login-page-success.png)
+
 If the user clicks the button without being logged in, an error message will be shown (as seen below).
-![jinja_login_no_auth](screenshots/jinja_no_auth/jinja-login-page-error.png)
+![jinja_logout_error](screenshots/jinja_no_auth/jinja-login-page-error.png)
 
 However, in both situations, the user is always routed back to the `login.html` page.
 
