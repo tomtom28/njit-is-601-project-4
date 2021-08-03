@@ -13,6 +13,9 @@ Each project runs independently in its own Docker container and on its own port 
 Most of the tutorials were completed, however, I ultimately decided to modify Project 3 and add user authentication.
 So, please refer to [my_final_project](/my-final-project/my_final_project) folder and treat that as the final submission.
 
+For example, the Part 2 of the tutorial is found [here](/flask-jinja-tutorial/flask_jinja_tutorial) and runs on port 5001, 
+while the final project submission is found [here](/my-final-project/my_final_project) and runs on port 8080.
+
 
 ## Setup
 The following prerequisites are needed to run this project:
