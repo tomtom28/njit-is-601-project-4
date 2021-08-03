@@ -4,11 +4,11 @@ from flask import Flask, request, Response, redirect, render_template, url_for, 
 from flaskext.mysql import MySQL
 from pymysql.cursors import DictCursor
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, login_user, login_required
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, login_user, login_required, logout_user
+from werkzeug.security import generate_password_hash
 from models import User
 
-from forms import SignupForm
+from forms import SignupForm, LoginForm
 
 
 app = Flask(__name__)
@@ -19,15 +19,6 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 db.init_app(app)
-
-
-# Blueprint Configuration
-main_bp = Blueprint(
-    'main_bp', __name__,
-    template_folder='templates',
-    static_folder='static'
-)
-app.register_blueprint(main_bp)
 
 
 mysql = MySQL(cursorclass=DictCursor)
@@ -42,7 +33,14 @@ def load_user(user_id):
         cursor = mysql.get_db().cursor()
         cursor.execute('SELECT * FROM `flasklogin-users` WHERE id = %s', user_id)
         result = cursor.fetchall()
-        return result[0]['id']
+        if len(result) != 0:
+            my_id = result[0]['id']
+            name = result[0]['name']
+            email = result[0]['email']
+            password = result[0]['password']
+            return User(my_id, name, email, password)
+        else:
+            return None
     return None
 
 
@@ -50,7 +48,7 @@ def load_user(user_id):
 def unauthorized():
     """Redirect unauthorized users to Login page."""
     flash('You must be logged in to view that page.')
-    return redirect(url_for('main_bp.signup'))
+    return redirect(url_for('login'))
 
 
 # User authentication is below...
@@ -81,11 +79,12 @@ def signup():
             insert_cursor.execute(sql_insert_query, input_data)
             mysql.get_db().commit()
             # Add User to session
-            user = User(1, name, email, hashed_password)
-            # db.session.add(user)
-            # db.session.commit()  # Create new user
+            cursor = mysql.get_db().cursor()
+            cursor.execute('SELECT * FROM `flasklogin-users` WHERE email = %s', email)
+            result = cursor.fetchall()
+            user_id = result[0]['id']
+            user = User(user_id, name, email, hashed_password)
             login_user(user)  # Log in as newly created user
-            # return redirect(url_for('main_bp.index'))
             return redirect('/')
         flash('A user already exists with that email address.')
     return render_template(
@@ -95,6 +94,121 @@ def signup():
         template='signup-page',
         body="Sign up for a user account."
     )
+
+
+# Login Page
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """User login form for account creation."""
+    form = LoginForm()
+    if form.validate_on_submit():
+        # Get Form Fields
+        email = form.email.data
+        password = form.password.data
+        # Hash the password
+        hashed_password = generate_password_hash(password, method='sha256')
+        # Get User by Email and Hashed Password
+        cursor = mysql.get_db().cursor()
+        cursor.execute('SELECT * FROM `flasklogin-users` WHERE email = %s AND password = %s', (email, hashed_password))
+        result = cursor.fetchall()
+        if len(result) != 0:  # User found
+            # Add User to session
+            user_id = result[0]['id']
+            name = result[0]['name']
+            user = User(user_id, name, email, hashed_password)
+            login_user(user)  # Log in as newly created user
+            return redirect('/')
+        flash('User Not Found! Please re-check email and/or password.')
+    return render_template(
+        'login.html',
+        title='Login to Account.',
+        form=form,
+        template='login-page',
+        body="Login to your account."
+    )
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+
+# Jinja Template Views are below...
+# Home Page - View all Players
+@app.route('/', methods=['GET'])
+def index():
+    cursor = mysql.get_db().cursor()
+    cursor.execute('SELECT * FROM tblMlbPlayersImport')
+    result = cursor.fetchall()
+    return render_template('index.html', title='Home', players=result)
+
+
+# View Player by Id
+@app.route('/view/<int:player_id>', methods=['GET'])
+def record_view(player_id):
+    cursor = mysql.get_db().cursor()
+    cursor.execute('SELECT * FROM tblMlbPlayersImport WHERE id=%s', player_id)
+    result = cursor.fetchall()
+    return render_template('view.html', title='View Player', player=result[0])
+
+
+# Add New Player by Id Page
+@app.route('/players/new', methods=['GET'])
+@login_required
+def form_insert_get():
+    return render_template('new.html', title='New Player Form')
+
+
+# Add New Player by Id Form
+@app.route('/players/new', methods=['POST'])
+@login_required
+def form_insert_post():
+    cursor = mysql.get_db().cursor()
+    input_data = (request.form.get('fldPlayerName'), request.form.get('fldTeamName'),
+                  request.form.get('fldPosition'), request.form.get('fldAge'),
+                  request.form.get('fldHeight'), request.form.get('fldWeight'))
+    sql_insert_query = """INSERT INTO tblMlbPlayersImport (fld_Name,fld_Team,fld_Position,fld_Age,fld_Height_inches,fld_Weight_lbs) VALUES (%s, %s,%s, %s,%s, %s) """
+    cursor.execute(sql_insert_query, input_data)
+    mysql.get_db().commit()
+    return redirect("/", code=302)
+
+
+# Edit Player by Id Page
+@app.route('/edit/<int:player_id>', methods=['GET'])
+@login_required
+def form_edit_get(player_id):
+    cursor = mysql.get_db().cursor()
+    cursor.execute('SELECT * FROM tblMlbPlayersImport WHERE id=%s', player_id)
+    result = cursor.fetchall()
+    return render_template('edit.html', title='Edit Form', player=result[0])
+
+
+# Edit Player by Id Form
+@app.route('/edit/<int:player_id>', methods=['POST'])
+@login_required
+def form_update_post(player_id):
+    cursor = mysql.get_db().cursor()
+    input_data = (request.form.get('fldPlayerName'), request.form.get('fldTeamName'),
+                  request.form.get('fldPosition'), request.form.get('fldAge'),
+                  request.form.get('fldHeight'), request.form.get('fldWeight'), player_id)
+    sql_update_query = """UPDATE tblMlbPlayersImport t SET t.fld_Name = %s, t.fld_Team = %s, t.fld_Position = 
+    %s, t.fld_Age = %s, t.fld_Height_inches = %s, t.fld_Weight_lbs = %s WHERE t.id = %s """
+    cursor.execute(sql_update_query, input_data)
+    mysql.get_db().commit()
+    return redirect("/", code=302)
+
+
+# Delete Player by Id Form
+@app.route('/delete/<int:player_id>', methods=['POST'])
+@login_required
+def form_delete_post(player_id):
+    cursor = mysql.get_db().cursor()
+    sql_delete_query = """DELETE FROM tblMlbPlayersImport WHERE id = %s """
+    cursor.execute(sql_delete_query, player_id)
+    mysql.get_db().commit()
+    return redirect("/", code=302)
 
 
 # API Endpoints are below...
@@ -122,6 +236,7 @@ def api_retrieve(player_id) -> str:
 
 # Add a New Player
 @app.route('/api/v1/player', methods=['POST'])
+@login_required
 def api_add() -> str:
     content = request.json
     cursor = mysql.get_db().cursor()
@@ -137,6 +252,7 @@ def api_add() -> str:
 
 # Update an existing Player by Id
 @app.route('/api/v1/player/<int:player_id>', methods=['PUT'])
+@login_required
 def api_edit(player_id) -> str:
     cursor = mysql.get_db().cursor()
     content = request.json
@@ -153,6 +269,7 @@ def api_edit(player_id) -> str:
 
 # Delete an existing Player by Id
 @app.route('/api/v1/player/<int:player_id>', methods=['DELETE'])
+@login_required
 def api_delete(player_id) -> str:
     cursor = mysql.get_db().cursor()
     sql_delete_query = """DELETE FROM tblMlbPlayersImport WHERE id = %s """
@@ -160,78 +277,6 @@ def api_delete(player_id) -> str:
     mysql.get_db().commit()
     resp = Response(status=200, mimetype='application/json')
     return resp
-
-
-# Jinga Template Views are below...
-# Home Page - View all Players
-@main_bp.route('/', methods=['GET'])  # @login_required
-def index():
-    user = {'username': 'MLB Players Project'}
-    cursor = mysql.get_db().cursor()
-    cursor.execute('SELECT * FROM tblMlbPlayersImport')
-    result = cursor.fetchall()
-    return render_template('index.html', title='Home', user=user, players=result)
-
-
-# View Player by Id
-@app.route('/view/<int:player_id>', methods=['GET'])
-def record_view(player_id):
-    cursor = mysql.get_db().cursor()
-    cursor.execute('SELECT * FROM tblMlbPlayersImport WHERE id=%s', player_id)
-    result = cursor.fetchall()
-    return render_template('view.html', title='View Player', player=result[0])
-
-
-# Add New Player by Id Page
-@app.route('/players/new', methods=['GET'])
-def form_insert_get():
-    return render_template('new.html', title='New Player Form')
-
-
-# Add New Player by Id Form
-@app.route('/players/new', methods=['POST'])
-def form_insert_post():
-    cursor = mysql.get_db().cursor()
-    input_data = (request.form.get('fldPlayerName'), request.form.get('fldTeamName'),
-                  request.form.get('fldPosition'), request.form.get('fldAge'),
-                  request.form.get('fldHeight'), request.form.get('fldWeight'))
-    sql_insert_query = """INSERT INTO tblMlbPlayersImport (fld_Name,fld_Team,fld_Position,fld_Age,fld_Height_inches,fld_Weight_lbs) VALUES (%s, %s,%s, %s,%s, %s) """
-    cursor.execute(sql_insert_query, input_data)
-    mysql.get_db().commit()
-    return redirect("/", code=302)
-
-
-# Edit Player by Id Page
-@app.route('/edit/<int:player_id>', methods=['GET'])
-def form_edit_get(player_id):
-    cursor = mysql.get_db().cursor()
-    cursor.execute('SELECT * FROM tblMlbPlayersImport WHERE id=%s', player_id)
-    result = cursor.fetchall()
-    return render_template('edit.html', title='Edit Form', player=result[0])
-
-
-# Edit Player by Id Form
-@app.route('/edit/<int:player_id>', methods=['POST'])
-def form_update_post(player_id):
-    cursor = mysql.get_db().cursor()
-    input_data = (request.form.get('fldPlayerName'), request.form.get('fldTeamName'),
-                  request.form.get('fldPosition'), request.form.get('fldAge'),
-                  request.form.get('fldHeight'), request.form.get('fldWeight'), player_id)
-    sql_update_query = """UPDATE tblMlbPlayersImport t SET t.fld_Name = %s, t.fld_Team = %s, t.fld_Position = 
-    %s, t.fld_Age = %s, t.fld_Height_inches = %s, t.fld_Weight_lbs = %s WHERE t.id = %s """
-    cursor.execute(sql_update_query, input_data)
-    mysql.get_db().commit()
-    return redirect("/", code=302)
-
-
-# Delete Player by Id Form
-@app.route('/delete/<int:player_id>', methods=['POST'])
-def form_delete_post(player_id):
-    cursor = mysql.get_db().cursor()
-    sql_delete_query = """DELETE FROM tblMlbPlayersImport WHERE id = %s """
-    cursor.execute(sql_delete_query, player_id)
-    mysql.get_db().commit()
-    return redirect("/", code=302)
 
 
 if __name__ == '__main__':
