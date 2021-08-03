@@ -25,7 +25,7 @@ The form validation includes ensuring that the user's `Name` and `Email` are com
 The form validation also includes verification that the `Password` and `Repeat Password` fields match.
 ![jinja_signup_password_validation](screenshots/jinja_no_auth/jinja-signup-password-validation.png)
 
-The form also ensures that the `Email` is not repeatedly submitted. Only new email addresses can be used to create a new account.
+The form also ensures that the same `Email` is not repeatedly submitted. Only new email addresses can be used to create a new account.
 ![jinja_signup_password_validation](screenshots/jinja_no_auth/jinja-signup-repeat-email.png)
 
 
@@ -54,11 +54,11 @@ Note that users do NOT need to be logged in to see a given player's data.
 If the user is logged in, a new player can be added using the `new.html` page.
 ![jinja_new](screenshots/jinja_auth/jinja-new-player.png)
 
-However, if the `Add+` button is pressed without the user being logged in, then the user will be re-directed to the login page.
-![jinja_new_no_auth](screenshots/jinja_no_auth/jinja-login-page.png)
-
 The new player can then be seen at the bottom of the `index.html` page
 ![jinja_index_new_player](screenshots/jinja_auth/jinja-index-new-player.png)
+
+However, if the `Add+` button is pressed without the user being logged in, then the user will be re-directed to the login page.
+![jinja_new_no_auth](screenshots/jinja_no_auth/jinja-login-page.png)
 
 
 ### Edit Existing Player Page
@@ -69,20 +69,19 @@ The edited player can then be viewed by their `id` using the `view.html` page
 ![jinja_view_edited_player](screenshots/jinja_auth/jinja-view-edit-player.png)
 
 Note that the `edit.html` page can only be seen if the user is logged in. 
-If an unauthorized clicked `Edit` on the page above, then they would be redirected to the `login` page.
+If an unauthorized user clicked `Edit` on the page above, then they would be redirected to the `login` page.
 ![jinja_edit_no_auth](screenshots/jinja_no_auth/jinja-login-page.png)
 
 
 ### Delete Existing Player
 Using the delete button on the player page (`view.html` from above), we can remove the player record by `id`.
 
-Note that a user most be authenticated (i.e., logged in) for the `Delete` button to be able to work.
-If an unauthorized clicked `Delete` on the page above, then they would be redirected to the `login` page.
-![jinja_delete_no_auth](screenshots/jinja_no_auth/jinja-login-page.png)
-
 The player record will then no longer appear on the `index.html` page
 ![jinja_index_delete_player](screenshots/jinja_auth/jinja-delete-player.png)
 
+Note that a user must be authenticated (i.e., logged in) for the `Delete` button to be able to work.
+If an unauthorized clicked `Delete` on the page above, then they would be redirected to the `login` page.
+![jinja_delete_no_auth](screenshots/jinja_no_auth/jinja-login-page.png)
 
 
 
