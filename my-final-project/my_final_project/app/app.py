@@ -4,8 +4,8 @@ from flask import Flask, request, Response, redirect, render_template, url_for, 
 from flaskext.mysql import MySQL
 from pymysql.cursors import DictCursor
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, login_user, login_required
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, login_user, login_required, logout_user
+from werkzeug.security import generate_password_hash
 from models import User
 
 from forms import SignupForm, LoginForm
@@ -58,12 +58,10 @@ def signup():
     """User sign-up form for account creation."""
     form = SignupForm()
     if form.validate_on_submit():
-
         # Get Form Fields
         name = form.name.data
         email = form.email.data
         password = form.password.data
-
         # Get User by Email
         cursor = mysql.get_db().cursor()
         cursor.execute('SELECT * FROM `flasklogin-users` WHERE email = %s', email)
@@ -74,14 +72,12 @@ def signup():
                 password,
                 method='sha256'
             )
-
             # Add User to DB
             insert_cursor = mysql.get_db().cursor()
             input_data = (name, email, hashed_password)
             sql_insert_query = """INSERT INTO `flasklogin-users` (name, email, password) VALUES (%s, %s, %s) """
             insert_cursor.execute(sql_insert_query, input_data)
             mysql.get_db().commit()
-
             # Add User to session
             cursor = mysql.get_db().cursor()
             cursor.execute('SELECT * FROM `flasklogin-users` WHERE email = %s', email)
@@ -105,16 +101,12 @@ def signup():
 def login():
     """User login form for account creation."""
     form = LoginForm()
-
     if form.validate_on_submit():
-
         # Get Form Fields
         email = form.email.data
         password = form.password.data
-
         # Hash the password
         hashed_password = generate_password_hash(password, method='sha256')
-
         # Get User by Email and Hashed Password
         cursor = mysql.get_db().cursor()
         cursor.execute('SELECT * FROM `flasklogin-users` WHERE email = %s AND password = %s', (email, hashed_password))
@@ -136,80 +128,21 @@ def login():
     )
 
 
-# API Endpoints are below...
-# View all Players
-@app.route('/api/v1/players', methods=['GET'])
-def api_browse() -> str:
-    cursor = mysql.get_db().cursor()
-    cursor.execute('SELECT * FROM tblMlbPlayersImport')
-    result = cursor.fetchall()
-    json_result = json.dumps(result);
-    resp = Response(json_result, status=200, mimetype='application/json')
-    return resp
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 
 
-# View a single Player record by Id
-@app.route('/api/v1/player/<int:player_id>', methods=['GET'])
-def api_retrieve(player_id) -> str:
-    cursor = mysql.get_db().cursor()
-    cursor.execute('SELECT * FROM tblMlbPlayersImport WHERE id=%s', player_id)
-    result = cursor.fetchall()
-    json_result = json.dumps(result);
-    resp = Response(json_result, status=200, mimetype='application/json')
-    return resp
-
-
-# Add a New Player
-@app.route('/api/v1/player', methods=['POST'])
-def api_add() -> str:
-    content = request.json
-    cursor = mysql.get_db().cursor()
-    input_data = (content['fld_Name'], content['fld_Team'],
-                  content['fld_Position'], content['fld_Age'],
-                  content['fld_Height_inches'], content['fld_Weight_lbs'])
-    sql_insert_query = """INSERT INTO tblMlbPlayersImport (fld_Name,fld_Team,fld_Position,fld_Age,fld_Height_inches,fld_Weight_lbs) VALUES (%s, %s,%s, %s,%s, %s) """
-    cursor.execute(sql_insert_query, input_data)
-    mysql.get_db().commit()
-    resp = Response(status=201, mimetype='application/json')
-    return resp
-
-
-# Update an existing Player by Id
-@app.route('/api/v1/player/<int:player_id>', methods=['PUT'])
-def api_edit(player_id) -> str:
-    cursor = mysql.get_db().cursor()
-    content = request.json
-    input_data = (content['fld_Name'], content['fld_Team'],
-                  content['fld_Position'], content['fld_Age'],
-                  content['fld_Height_inches'], content['fld_Weight_lbs'], player_id)
-    sql_update_query = """UPDATE tblMlbPlayersImport t SET t.fld_Name = %s, t.fld_Team = %s, t.fld_Position = 
-        %s, t.fld_Age = %s, t.fld_Height_inches = %s, t.fld_Weight_lbs = %s WHERE t.id = %s """
-    cursor.execute(sql_update_query, input_data)
-    mysql.get_db().commit()
-    resp = Response(status=200, mimetype='application/json')
-    return resp
-
-
-# Delete an existing Player by Id
-@app.route('/api/v1/player/<int:player_id>', methods=['DELETE'])
-def api_delete(player_id) -> str:
-    cursor = mysql.get_db().cursor()
-    sql_delete_query = """DELETE FROM tblMlbPlayersImport WHERE id = %s """
-    cursor.execute(sql_delete_query, player_id)
-    mysql.get_db().commit()
-    resp = Response(status=200, mimetype='application/json')
-    return resp
-
-
-# Jinga Template Views are below...
+# Jinja Template Views are below...
 # Home Page - View all Players
 @app.route('/', methods=['GET'])
 def index():
-    user = {'username': 'MLB Players Project'}
     cursor = mysql.get_db().cursor()
     cursor.execute('SELECT * FROM tblMlbPlayersImport')
     result = cursor.fetchall()
-    return render_template('index.html', title='Home', user=user, players=result)
+    return render_template('index.html', title='Home', players=result)
 
 
 # View Player by Id
@@ -276,6 +209,74 @@ def form_delete_post(player_id):
     cursor.execute(sql_delete_query, player_id)
     mysql.get_db().commit()
     return redirect("/", code=302)
+
+
+# API Endpoints are below...
+# View all Players
+@app.route('/api/v1/players', methods=['GET'])
+def api_browse() -> str:
+    cursor = mysql.get_db().cursor()
+    cursor.execute('SELECT * FROM tblMlbPlayersImport')
+    result = cursor.fetchall()
+    json_result = json.dumps(result);
+    resp = Response(json_result, status=200, mimetype='application/json')
+    return resp
+
+
+# View a single Player record by Id
+@app.route('/api/v1/player/<int:player_id>', methods=['GET'])
+def api_retrieve(player_id) -> str:
+    cursor = mysql.get_db().cursor()
+    cursor.execute('SELECT * FROM tblMlbPlayersImport WHERE id=%s', player_id)
+    result = cursor.fetchall()
+    json_result = json.dumps(result);
+    resp = Response(json_result, status=200, mimetype='application/json')
+    return resp
+
+
+# Add a New Player
+@app.route('/api/v1/player', methods=['POST'])
+@login_required
+def api_add() -> str:
+    content = request.json
+    cursor = mysql.get_db().cursor()
+    input_data = (content['fld_Name'], content['fld_Team'],
+                  content['fld_Position'], content['fld_Age'],
+                  content['fld_Height_inches'], content['fld_Weight_lbs'])
+    sql_insert_query = """INSERT INTO tblMlbPlayersImport (fld_Name,fld_Team,fld_Position,fld_Age,fld_Height_inches,fld_Weight_lbs) VALUES (%s, %s,%s, %s,%s, %s) """
+    cursor.execute(sql_insert_query, input_data)
+    mysql.get_db().commit()
+    resp = Response(status=201, mimetype='application/json')
+    return resp
+
+
+# Update an existing Player by Id
+@app.route('/api/v1/player/<int:player_id>', methods=['PUT'])
+@login_required
+def api_edit(player_id) -> str:
+    cursor = mysql.get_db().cursor()
+    content = request.json
+    input_data = (content['fld_Name'], content['fld_Team'],
+                  content['fld_Position'], content['fld_Age'],
+                  content['fld_Height_inches'], content['fld_Weight_lbs'], player_id)
+    sql_update_query = """UPDATE tblMlbPlayersImport t SET t.fld_Name = %s, t.fld_Team = %s, t.fld_Position = 
+        %s, t.fld_Age = %s, t.fld_Height_inches = %s, t.fld_Weight_lbs = %s WHERE t.id = %s """
+    cursor.execute(sql_update_query, input_data)
+    mysql.get_db().commit()
+    resp = Response(status=200, mimetype='application/json')
+    return resp
+
+
+# Delete an existing Player by Id
+@app.route('/api/v1/player/<int:player_id>', methods=['DELETE'])
+@login_required
+def api_delete(player_id) -> str:
+    cursor = mysql.get_db().cursor()
+    sql_delete_query = """DELETE FROM tblMlbPlayersImport WHERE id = %s """
+    cursor.execute(sql_delete_query, player_id)
+    mysql.get_db().commit()
+    resp = Response(status=200, mimetype='application/json')
+    return resp
 
 
 if __name__ == '__main__':
