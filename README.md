@@ -29,3 +29,10 @@ After you clone down this repo, you should do the following in PyCharm:
    * Once the Run Time Configurations are complete, press the green play button. This will automatically seed the database using the `my-final-project/my_final_project/db/init.sql` file.
      * The database is created in its own Docker container (it uses the `db` configuration in the `docker-compose.yml` file).
    * While the project is running PyCharm, you can navigate to `http://localhost:8080/signup` to create a user account and test the application.
+
+
+## Test Locally
+The project can be tested from any browser (but Google Chrome is preferred). 
+Please refer to the readme file located [here](/my-final-project/my_final_project) for test use cases.
+
+In order to test the API, you should download and install Postman from [here](https://www.postman.com/downloads/).
